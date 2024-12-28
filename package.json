@@ -60,7 +60,6 @@
     "rimraf": "5.0.10",
     "typescript": "5.7.2"
   },
-  "packageManager": "yarn@4.2.2",
   "dependencies": {
     "discord.js-selfbot-v13": "^3.4.6",
     "dotenv": "^16.4.7",
