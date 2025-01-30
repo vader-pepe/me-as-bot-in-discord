@@ -17,10 +17,10 @@ client.once('ready', async () => {
 
     setInterval(async () => {
       let days = Number(await readFile("days", "utf8").catch(() => "0"));
-      const newActivity = `No games until I finished my own game (${days - 1}/30)`;
+      const newActivity = `No games until I finished my own game (${days + 1}/30)`;
 
-      client.user.setActivity(newActivity);
-      await writeFile("days", `${days - 1}`);
+      client!.user!.setActivity(newActivity);
+      await writeFile("days", `${days + 1}`);
     }, dayInMilliseconds);
   }
 });
