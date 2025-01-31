@@ -19,7 +19,13 @@ client.once('ready', async () => {
       let days = Number(await readFile("days", "utf8").catch(() => "0"));
       const newActivity = `No games until I finished my own game (${days + 1}/30)`;
 
-      client!.user!.setActivity(newActivity);
+      client!.user!.setPresence({
+        activities: [{
+          name: newActivity,
+          type: "CUSTOM"
+        }],
+        status: 'online',
+      });
       await writeFile("days", `${days + 1}`);
     }, dayInMilliseconds);
   }
