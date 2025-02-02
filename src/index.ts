@@ -11,20 +11,20 @@ const onCloseSignal = () => {
   setTimeout(() => process.exit(1), 10000).unref(); // Force shutdown after 10s
 };
 
-client.once('ready', async () => {
-  if (client.user) {
-    console.log(`${client.user.username} is ready!`);
+client.once('ready', async (c) => {
+  if (c.user) {
+    console.log(`${c.user.username} is ready!`);
 
     setInterval(async () => {
+      console.log("Interval ran");
       let days = Number(await readFile("days", "utf8").catch(() => "0"));
       const newActivity = `No games until I finished my own game (${days + 1}/30)`;
 
-      client!.user!.setPresence({
-        activities: [{
-          name: newActivity,
-          type: "CUSTOM"
-        }],
-        status: 'online',
+      c.user.setPresence({
+        status: "online",
+      });
+      c.user.setActivity(newActivity, {
+        type: "CUSTOM",
       });
       await writeFile("days", `${days + 1}`);
     }, dayInMilliseconds);
