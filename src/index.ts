@@ -15,7 +15,7 @@ client.once('ready', async (c) => {
   if (c.user) {
     console.log(`${c.user.username} is ready!`);
 
-    schedule("00 00 12 * * 0-6", async function() {
+    schedule("00 00 * * *", async function() {
       console.log("Interval ran");
       const days = Number(await readFile("days", "utf8").catch(() => "0"));
       const newActivity = `No games until I finished my own game (${days + 1}/30)`;
