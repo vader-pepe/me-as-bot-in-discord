@@ -1,6 +1,4 @@
 import { Client } from 'discord.js-selfbot-v13';
-import { readFile, writeFile } from "node:fs/promises";
-import { schedule } from "node-cron";
 import 'dotenv/config'
 
 const client = new Client();
@@ -15,18 +13,14 @@ client.once('ready', async (c) => {
   if (c.user) {
     console.log(`${c.user.username} is ready!`);
 
-    schedule("00 00 * * *", async function() {
-      console.log("Interval ran");
-      const days = Number(await readFile("days", "utf8").catch(() => "0"));
-      const newActivity = `No games until I finished my own game (${days + 1}/30)`;
+    const newActivity = ``;
 
-      c.user.setPresence({
-        status: "online",
-      });
-      c.user.setActivity(newActivity, {
-        type: "CUSTOM",
-      });
-      await writeFile("days", `${days + 1}`);
+    c.user.setPresence({
+      status: "online",
+    });
+    c.user.setActivity(newActivity, {
+      type: "LISTENING",
+      url: 'https://open.spotify.com/track/0EdMqiKs9LKXhspeQhl4RZ'
     });
   }
 });
