@@ -1,31 +1,35 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
-
-# Set working directory
+# Base stage with pnpm setup
+FROM node:20.11.1-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 WORKDIR /app
 
-# Install dependencies
+# Production dependencies stage
+FROM base AS prod-deps
 COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+# Install only production dependencies
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile --ignore-scripts
 
-# Copy source code
+# Build stage - install all dependencies and build
+FROM base AS build
+COPY package.json pnpm-lock.yaml ./
+# Install all dependencies (including dev dependencies)
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
+RUN pnpm run bundle
 
-# Build the application
-RUN pnpm bundle
-
-# Stage 2: Production
-FROM node:20-alpine AS production
-
-# Set working directory
+# Final stage - combine production dependencies and build output
+FROM node:20.11.1-alpine AS runner
 WORKDIR /app
+COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/dist ./dist
 
-# Install runtime dependencies only
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
+# Use the node user from the image
+USER node
 
-# Copy build output from builder stage
-COPY --from=builder /app/dist ./dist
+# Expose port 8080
+EXPOSE 8080
 
-CMD ["node", "--enable-source-maps", "./dist/index.js"]
-
+# Start the server
+CMD ["node", "dist/index.js"]
