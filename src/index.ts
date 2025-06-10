@@ -18,7 +18,7 @@ client.once('ready', async (c) => {
     console.log(`${c.user.username} is ready!`);
 
     c.on('messageCreate', async (message) => {
-      if (message.author.bot || !message.guild) return;
+      if (!message.guild) return;
       if (message.guild.id !== source_server) return;
       console.log(JSON.stringify(message));
       let thread_id = "1376497961609068566";
@@ -280,6 +280,7 @@ client.once('ready', async (c) => {
         webhook.send({
           content: message.content || " ",
           files: [...message.attachments.values()],
+          threadId: thread_id,
           embeds
         });
       } catch (err) {
