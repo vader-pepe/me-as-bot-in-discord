@@ -20,7 +20,8 @@ client.once('ready', async (c) => {
     c.on('messageCreate', async (message) => {
       if (message.author.bot || !message.guild) return;
       if (message.guild.id !== source_server) return;
-      let thread_id = "";
+      console.log(JSON.stringify(message));
+      let thread_id = "1376497961609068566";
 
       // alya
       if (message.channelId === "1222541310603427900") {
@@ -279,7 +280,6 @@ client.once('ready', async (c) => {
         webhook.send({
           content: message.content || " ",
           files: [...message.attachments.values()],
-          threadId: thread_id,
           embeds
         });
       } catch (err) {
