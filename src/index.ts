@@ -21,7 +21,7 @@ client.once('ready', async (c) => {
       if (!message.guild) return;
       if (message.guild.id !== source_server) return;
       console.log(JSON.stringify(message));
-      let thread_id = "1376497961609068566";
+      let thread_id = undefined;
 
       // alya
       if (message.channelId === "1222541310603427900") {
