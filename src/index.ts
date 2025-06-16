@@ -276,6 +276,8 @@ client.once('ready', async (c) => {
         thumbnail: embed.thumbnail ? { url: embed.thumbnail.url } : undefined
       }));
 
+      if (thread_id === undefined) return
+
       try {
         webhook.send({
           content: message.content || " ",
