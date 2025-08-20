@@ -1,31 +1,28 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
-
-# Set working directory
+# Base stage with pnpm setup
+FROM node:23.11.1-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 WORKDIR /app
 
-# Install dependencies
+# Install native build dependencies
+FROM base AS native-deps
 COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --ignore-scripts
 
-# Copy source code
+# Build stage
+FROM base AS build
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
+RUN pnpm run build
 
-# Build the application
-RUN pnpm bundle
-
-# Stage 2: Production
-FROM node:20-alpine AS production
-
-# Set working directory
+# Final stage
+FROM node:23.11.1-slim AS runner
 WORKDIR /app
-
-# Install runtime dependencies only
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
-
-# Copy build output from builder stage
-COPY --from=builder /app/dist ./dist
-
-CMD ["node", "--enable-source-maps", "./dist/index.js"]
-
+COPY --from=native-deps --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/dist ./dist
+USER node
+CMD ["node", "dist/index.js"]

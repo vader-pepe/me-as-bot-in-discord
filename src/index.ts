@@ -1,34 +1,47 @@
-import { Client } from 'discord.js-selfbot-v13';
-import 'dotenv/config'
+import { Client } from "discord.js-selfbot-v13";
+import dotenv from "dotenv";
 
-const client = new Client();
-const token = process.env.TOKEN;
+dotenv.config();
 
-const onCloseSignal = () => {
-  console.info("sigint received, shutting down");
-  setTimeout(() => process.exit(1), 10000).unref(); // Force shutdown after 10s
-};
+const client = new Client({
+  partials: ["CHANNEL"], // required for DMs
+});
 
-client.once('ready', async (c) => {
-  if (c.user) {
-    console.log(`${c.user.username} is ready!`);
+const GUILD_ID = process.env.GUILD_ID;
 
-    const newActivity = ``;
+if (!GUILD_ID) {
+  throw new Error("GUILD_ID is not defined in .env");
+}
 
-    c.user.setPresence({
-      status: "online",
-    });
-    c.user.setActivity(newActivity, {
-      type: "LISTENING",
-      url: 'https://open.spotify.com/track/0EdMqiKs9LKXhspeQhl4RZ'
-    });
+client.once("ready", () => {
+  console.log(`Logged in as ${client.user?.tag}`);
+});
+
+client.on("messageCreate", async (message) => {
+  try {
+    // Only handle DMs, ignore bot messages
+    if (message.guild || message.author.bot) return;
+
+    if (message.content.toLowerCase() === "unban") {
+      const guild = await client.guilds.fetch(GUILD_ID);
+      const member = await guild.members.fetch(message.author.id).catch(() => null);
+
+      if (!member) {
+        await message.reply("You are not in the server.");
+        return;
+      }
+
+      try {
+        await member.timeout(null); // removes timeout
+        await message.reply("Your timeout has been removed!");
+      } catch (err) {
+        console.error(err);
+        await message.reply("Failed to remove your timeout. Please contact an admin.");
+      }
+    }
+  } catch (err) {
+    console.error("Error handling DM:", err);
   }
 });
 
-client.on('error', async () => {
-  process.on("SIGINT", onCloseSignal);
-  process.on("SIGTERM", onCloseSignal);
-});
-
-client.login(token);
-
+client.login(process.env.TOKEN);
